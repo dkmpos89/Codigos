@@ -17,22 +17,13 @@
 #include <string.h>
 
 
-/*  variables globales y constantes */
-const int SI = 1;
-const int NO = 0;
-int salir = 0;
-int tamListaAgendas = 0;// tamaño de la lista de agendas
-
-
 /* Declaracion de struct */
 typedef struct AgendaMedica
 {
    time_t fechaInicio;
    time_t fechaFin;
    char *especialidad;
-
    //  *lista_simple;
-
    struct AgendaMedica *siguiente;
 }AGM;
 
@@ -40,6 +31,7 @@ typedef struct ListadoAgendasMedicas
 {
 	AGM *INICIO;
 	AGM *FIN;
+	int tam;// tamaño de la lista
 }LAGM;
 
 
@@ -50,84 +42,77 @@ struct AgendaMedica *crearNuevaAgenda(char[], char[], char[]);
 void setFecha(struct tm *, time_t *, char[]);
 LAGM *crearLista();
 void insertarAgenda(LAGM *, AGM *);
-void eliminarAgenda(LAGM *, int n);
+void eliminarAgenda(LAGM *);
 int isEmpty(LAGM *listaAg);
+void mostrar_listaAgendas(LAGM *listaAg);
+void anadir_elementoAg();
 
 
+/*  variables globales y constantes */
+const char *SALIR = "1";
+LAGM *listaAgendas;
 
 
 /* Main del programa - Funcion principal */
 int main()
 {	
-	
-	LAGM *listaAgendas = crearLista();
+	/* Inicializacion de lista de Agendas que es una variable global */
+	listaAgendas = crearLista();
+	char opcion;
 
+	/* Inserciones de prueba */
 	struct AgendaMedica *Agenda1 = crearNuevaAgenda("08-01-2016", "18-01-2016", "Anatomia");
-	if (Agenda1!=NULL)
-	{
-		printf("%s\n", (Agenda1->especialidad));
-		printf("%s\n", ctime(&(Agenda1->fechaInicio)));
-		printf("%s\n", ctime(&(Agenda1->fechaFin)));
-
-		insertarAgenda(listaAgendas, Agenda1);
-	}
-
+	if (Agenda1!=NULL) insertarAgenda(listaAgendas, Agenda1);
 	
 	struct AgendaMedica *Agenda2 = crearNuevaAgenda("19-08-2016", "29-08-2016", "Radiologia");
-	if (Agenda2!=NULL)
-	{
-		printf("%s\n", (Agenda2->especialidad));
-		printf("%s\n", ctime(&(Agenda2->fechaInicio)));
-		printf("%s\n", ctime(&(Agenda2->fechaFin)));
+	if (Agenda2!=NULL) insertarAgenda(listaAgendas, Agenda2);
+	/* Fin del bloque de Inserciones de prueba - Eliminar despues para version FINAL */
 
-		insertarAgenda(listaAgendas, Agenda2);
-	}
-
-	printf("Numero de elementos de la lista de Agendas: %d\n", tamListaAgendas);
-
-	/*
-	do{
-		mostrarOpciones();
-	}while(salir!=SI);
-	*/
+     do {
+         mostrarOpciones();
+         opcion = getch();
+             switch ( opcion ) {
+                case '1': exit( 1 );
+                        break;
+                case '2':  anadir_elementoAg();
+                        break;
+                case '3': eliminarAgenda(listaAgendas);
+                        break;
+                case '4': mostrar_listaAgendas(listaAgendas);
+                		break;
+                case '5': printf("consultando disponibilidad de turnos!..... :)");
+                		getch();
+                		break;
+                default: break;
+             }
+     } while (opcion != *SALIR);
 
 	return 0;
 }
 /* End of main() */
 
 
-/* implementacion de las funciones */
+/* Implementacion de las funciones */
 void mostrarOpciones()
 {
-	char *opcion = malloc(sizeof(char*)*10);
-	int nopcion = 0;
-	do{
-		system(OS_Clear);
-		puts("  ===========================================  ");
-		puts("       M E N U    D E    O P C I O N E S       ");
-		puts("  ===========================================  ");
-		puts("  ===========================================  ");
-		printf("Ingrese una opcion: ");
-		gets(opcion);
-		nopcion = atoi(opcion);
-	}while (nopcion<0 || nopcion>9);
-
-	if(nopcion==1) {salir = SI; return;}
-	else{ printf("Trabajando en la opcion seleccionada!\n");}
-	
-	/* 
-	aqui va el Bloque de opciones con llamadas a otras funciones.
-	.	.
-	.	.
-
-	*/
+	system(OS_Clear);
+	puts("  ===========================================  ");
+	puts("       M E N U    D E    O P C I O N E S       ");
+	puts("  ===========================================  ");
+	puts("  ===========================================  ");
+	puts("1.- Salir\n");
+	puts("2.- Ingresar Agenda Medica\n");
+	puts("3.- Borrar Agenda Medica\n");
+	puts("4.- Mostrar lista de Agendas\n");
+	puts("5.- Consultar disponibilidad de turno\n\n");
+	puts("Ingrese una opcion: ");
 }
 
 struct AgendaMedica *crearNuevaAgenda(char fI[], char fF[], char espec[])
 {
 	struct AgendaMedica *pAG;
 	pAG = malloc(sizeof(struct AgendaMedica));
-	pAG->especialidad = (char *)malloc(50*sizeof(char));
+	pAG->especialidad = (char *)malloc(20*sizeof(char));
 	pAG->siguiente = NULL;
 
 	/* Variables de la libreria time.h usadas para manejar las fechas */
@@ -142,24 +127,26 @@ struct AgendaMedica *crearNuevaAgenda(char fI[], char fF[], char espec[])
     /* Se asignan los valores a las varibles de tipo time_t */      
 	pAG->fechaInicio = fechaI;
 	pAG->fechaFin = fechaF;
-	pAG->especialidad = espec;
+	strcpy(pAG->especialidad,espec);
 
 	/* Se verifican los rangos de las fechas si son validos y se mustra un mensaje de ERROR*/
 	double rango = difftime(fechaF, fechaI);
 	if(rango<=0) {
 		printf("Rango de fechas no valido: %f dias.\n", rango/(24*3600));  // la variable rango esta en segundos por eso se divide para convertirla en dias. 
+		getch();
 		free(pAG);
 		return NULL;
 	}
-
+	puts("Nueva agenda creada con exito!... Presione cualquier tecla para continuar.");
+	getch();
 	return pAG;
 }
 
-void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[8])
+void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[10])
 {
 	*tiempo = time(0);
 	tlocal = localtime(tiempo);
-	char *str = (char *)malloc(sizeof(char*)*8);
+	char *str = (char *)malloc(10*sizeof(char));
 	strcpy(str,fecha);
 	const char s[2]="-";
 	
@@ -171,10 +158,6 @@ void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[8])
 	tlocal->tm_mon = numbmonth;
 	//tlocal->tm_year = numbyear;
 
-//	char output[128];
-//	strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
-//	printf("%s\n",output);
-	
 	*tiempo = mktime(tlocal);	
 
 }
@@ -182,9 +165,10 @@ void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[8])
 /* Crea una lista de Agendas vacia y le asigna memoria */
 LAGM *crearLista()
 {
-	LAGM *listaAgendas = malloc(sizeof(LAGM));
+	LAGM *listaAgendas = (LAGM *)malloc(sizeof(LAGM));
 	listaAgendas->INICIO = NULL;
 	listaAgendas->FIN = NULL;
+	listaAgendas->tam = 0;
 
 	return listaAgendas;
 }
@@ -202,35 +186,63 @@ void insertarAgenda(LAGM *listaAg, AGM *agMed)
 			listaAg->FIN->siguiente = agMed;
 			listaAg->FIN = agMed;
 		}
-		tamListaAgendas++; // cada vez que se inserta se incrementa el contador de elementos de la lista general. (Variable Global)
+		listaAg->tam += 1; // cada vez que se inserta se incrementa el contador de elementos de la lista.
 	}else
 		printf("ERROR: No se puede insertar el elemento en la lista.\n");
 }
 
 /* inserta un elemento Agenda en una lista de Agendas */
-void eliminarAgenda(LAGM *listaAg, int n)
+void eliminarAgenda(LAGM *listaAg)
 {
-	if(listaAg!=NULL && n>0 && n<=tamListaAgendas)
+	puts("Ingrese el numero de la agenda que se va a eliminar: ");
+	char *inp = (char *)malloc(100*sizeof(char));
+	scanf("%s", inp);
+	int n = atoi(inp);
+
+	AGM *nodo = NULL;
+	AGM *agAux = NULL;
+
+	if(listaAg->INICIO!=NULL && n>0 && n<=listaAg->tam)
 	{
-		if (n==1 && tamListaAgendas==1)
-		{
-			listaAg->INICIO = NULL;
-			listaAg->FIN = NULL;
-			return;
+		/*  Bloque para el caso que se quiera eliminar el primer elemento */
+		if (n==1){
+			agAux = listaAg->INICIO;
+			if(listaAg->tam==1){
+				listaAg->INICIO = NULL;
+				listaAg->FIN = NULL;
+				free(agAux);
+				puts("Registro Eliminado con exito!!\n" );
+				puts("Presione cualquier tecla para continuar...");
+				getch();
+				return;
+			}else{
+				listaAg->INICIO = listaAg->INICIO->siguiente;
+				free(agAux);
+				puts("Registro Eliminado con exito!!\n" );
+				puts("Presione cualquier tecla para continuar...");
+				getch();
+				return;
+			}
 		}
 
-		AGM *actual = listaAg->INICIO;
-		AGM *agAux = NULL;
-		for (int i = 1; i <= tamListaAgendas; ++i)
+		/*  Bloque para el caso que se quiera eliminar un elemento al centro de la lista */
+		int i = 0;
+		nodo = listaAg->INICIO;
+		for (i = 1; i <= listaAg->tam; ++i)
 		{
-			if(i==n){
-				agAux = actual->siguiente;
+			if(i==n-1){
+				agAux = nodo->siguiente;
+				nodo->siguiente = agAux->siguiente;
+				puts("Registro Eliminado con exito!!\n" );
 				break;
 			} 
-			actual = actual->siguiente;
+			nodo = nodo->siguiente;
 		}
-	}else
+	}else{
 		printf("ERROR: No se puede eliminar el elemento %d de la lista.\n", n);
+	}
+	puts("Presione cualquier tecla para continuar...");
+	getch();
 }
 
 /* Verifica si la lista esta vacia */
@@ -248,6 +260,61 @@ int isEmpty(LAGM *listaAg)
 	
 	return cont;
 }
+
+void mostrar_listaAgendas(LAGM *listaAg)
+{
+	AGM *auxiliar = malloc(sizeof(AGM)); /* lo usamos para recorrer la lista */
+	int i = 0;
+	int cont = 1;
+
+	char * fechaI = (char *)malloc(10*sizeof(char));
+	char * fechaF= (char *)malloc(10*sizeof(char));
+
+	auxiliar = listaAg->INICIO;
+	printf("\nMostrando la lista completa:\n");
+	while (auxiliar!=NULL) 
+	{
+		printf( "%d - Especialidad: %s\n", cont,auxiliar->especialidad);
+		fechaI = ctime(&(auxiliar->fechaInicio));
+		printf("Fecha Inicio: %s", fechaI);
+		fechaF = ctime(&(auxiliar->fechaFin));
+		printf("Fecha de Termino: %s\n", fechaF);
+
+		auxiliar = auxiliar->siguiente;
+		i++;
+		cont++;
+	}
+	if (i==0) printf( "\nLa lista esta vacia!!\n" );
+	free(auxiliar);
+	puts("Presione cualquier tecla para continuar...");
+	getch();
+}
+
+void anadir_elementoAg()
+{
+	AGM *nuevo;
+	char f1[20], f2[20], esp[20];
+
+	printf("\nNueva agenda Medica:\n");
+	printf("Especialidad:	"); fflush(stdout);
+	gets(esp);
+	printf("Fecha de Inicio-->	(dd-mm-yyyy) : "); fflush(stdout);
+	gets(f1);
+	printf("Fecha de Termino->	(dd-mm-yyyy) : "); fflush(stdout);
+	gets(f2);
+
+	if (strlen(f1)==10 && strlen(f2)==10)
+	{
+		nuevo = crearNuevaAgenda(f1,f2,esp);
+		insertarAgenda(listaAgendas, nuevo);
+	}else{
+		puts("ERROR: Formato de fechas incorrecto!");
+		getch();
+	}
+	
+}
+
+
 
 /*
 
