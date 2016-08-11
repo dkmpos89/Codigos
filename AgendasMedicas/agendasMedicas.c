@@ -18,12 +18,28 @@
 
 
 /* Declaracion de struct */
+typedef struct NodoLTASIM
+{
+	int codigo;
+	time_t fecha_atencion;
+	int turnos_libres;
+	int turnos_ocupados;
+	struct NodoLTASIM *siguiente;
+}NLS;
+
+typedef struct listaSimple
+{
+	NLS *INICIO;
+	NLS *FIN;
+	int tam;
+}LTASIM;
+
 typedef struct AgendaMedica
 {
    time_t fechaInicio;
    time_t fechaFin;
    char *especialidad;
-   //  *lista_simple;
+   LTASIM  *lista_simple;
    struct AgendaMedica *siguiente;
 }AGM;
 
@@ -41,6 +57,8 @@ void mostrarOpciones();
 struct AgendaMedica *crearNuevaAgenda(char[], char[], char[]);
 void setFecha(struct tm *, time_t *, char[]);
 LAGM *crearLista();
+LTASIM *crearListaSimple();
+NLS *crearNodoLTASIM(int, char[], int, int);
 void insertarAgenda(LAGM *, AGM *);
 void eliminarAgenda(LAGM *);
 int isEmpty(LAGM *listaAg);
@@ -110,10 +128,12 @@ void mostrarOpciones()
 
 struct AgendaMedica *crearNuevaAgenda(char fI[], char fF[], char espec[])
 {
-	struct AgendaMedica *pAG;
-	pAG = malloc(sizeof(struct AgendaMedica));
+	struct AgendaMedica *pAG = malloc(sizeof(struct AgendaMedica));
 	pAG->especialidad = (char *)malloc(20*sizeof(char));
 	pAG->siguiente = NULL;
+
+	struct listaSimple *lS = malloc(sizeof(struct listaSimple));
+	lS = crearListaSimple();
 
 	/* Variables de la libreria time.h usadas para manejar las fechas */
 	struct tm str_fechaI;
@@ -171,6 +191,23 @@ LAGM *crearLista()
 	listaAgendas->tam = 0;
 
 	return listaAgendas;
+}
+
+LTASIM *crearListaSimple()
+{
+	LTASIM *listaNueva = (LTASIM *)malloc(sizeof(LTASIM));
+	listaNueva->INICIO = NULL;
+	listaNueva->FIN = NULL;
+	listaNueva->tam = 0;
+
+	return listaNueva;
+}
+
+NLS *crearNodoLTASIM(int codigo, char fecha_at[10], int t_disp, int t_ocup)
+{
+	NLS *nodo = (NLS *)malloc(sizeof(NLS));
+	nodo->siguiente = NULL;
+
 }
 
 /* inserta un elemento Agenda en una lista de Agendas */
