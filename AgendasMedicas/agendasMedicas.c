@@ -85,7 +85,7 @@ int main()
 	char opcion;
 	int vt = -1; // variable para verificar_turnos:  0 | -1
 	int num_agenda = 0, code_medico = 0;
-	char fecha_consulta[10];
+	char *fecha_consulta = (char *)malloc(10*sizeof(char));
 
 
 	/* Inserciones de prueba */
@@ -212,7 +212,7 @@ NLS *crearNodoLTASIM(int cod, char fecha_at[], int t_disp, int t_ocup)
 	return nodo; 
 }
 
-void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[10])
+void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[])
 {
 	char *str = (char *)malloc(10*sizeof(char));
 	strcpy(str,fecha);
@@ -398,15 +398,22 @@ void mostrar_listaAgendas(LTAGM *listaAg)
 void anadir_elementoAg()
 {
 	AGM *nuevo;
-	char f1[20], f2[20], esp[20];
-	printf("\nNueva agenda Medica:\n");
-	printf("Especialidad:	"); fflush(stdin);
-	gets(esp);
-	printf("Fecha de Inicio-->	(dd-mm-yyyy) : "); fflush(stdin);
-	gets(f1);
-	printf("Fecha de Termino->	(dd-mm-yyyy) : "); fflush(stdin);
-	gets(f2);
+	char *f1 = (char *)malloc(20*sizeof(char));
+	char *f2 = (char *)malloc(20*sizeof(char));
+	char *esp = (char *)malloc(20*sizeof(char));
 
+	fflush(stdin);
+	printf("\nNueva agenda Medica:\n");
+	printf("Especialidad:	"); 
+	fflush(stdin);
+	scanf("%s", esp);
+	printf("Fecha de Inicio-->	(dd-mm-yyyy) : "); 
+	fflush(stdin);
+	scanf("%s", f1);
+	printf("Fecha de Termino->	(dd-mm-yyyy) : "); 
+	fflush(stdin);
+	scanf("%s", f2);
+	fflush(stdin);
 	if (strlen(f1)==10 && strlen(f2)==10)
 	{
 		nuevo = crearNuevaAgenda(f1,f2,esp);
@@ -423,14 +430,14 @@ void ingresar_elementoLS()
 	AGM * agenda_actual = (AGM *)malloc(sizeof(AGM));
 	NLS *nuevo = (NLS *)malloc(sizeof(NLS));
 	int numLista, cod_med, turnos_libres, turnos_ocupados;
-	char fecha_atencion[20];
+	char *fecha_atencion = (char *)malloc(20*sizeof(char));
 
 	printf("\nIngrese numero de la Lista en la que se va a insertar: ");
 	scanf("%d", &numLista);
 	printf("Ingrese el codigo del medico:	"); fflush(stdin);
 	scanf("%d", &cod_med);
 	printf("Ingrese la fecha de atencion -->(dd-mm-yyyy): "); fflush(stdin);
-	scanf("%s", &fecha_atencion);
+	scanf("%s", fecha_atencion);
 	printf("Ingrese la cantidad de turnos libres: "); fflush(stdin);
 	scanf("%d", &turnos_libres);
 	printf("Ingrese la cantidad de turnos ocupados: "); fflush(stdin);
@@ -462,7 +469,7 @@ int verificar_turno(int num_agenda, int cod_medico, char fecha_atencion[])
 	{
 		if(auxiliar->codigo_medico == cod_medico) {
 			puts("Encontre al medico!");
-			if(*auxiliar->str_fecha = fecha_atencion && auxiliar->turnos_libres>0)
+			if((*(auxiliar->str_fecha) = *fecha_atencion) && (auxiliar->turnos_libres>0))
 				return 0;
 		}
 		auxiliar = auxiliar->siguiente;
