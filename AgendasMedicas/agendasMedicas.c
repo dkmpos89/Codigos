@@ -1,6 +1,5 @@
 /* Bloque de identificacion de Sistema Operativo : 
-* Sirve para setear variables usadas de forma diferente 
-* en Linux y Windows
+* Se usa para setear variables usadas de forma diferente en Linux y Windows
 */
 #ifdef __unix__  
     #define OS_Windows 0
@@ -9,7 +8,7 @@
 	#define OS_Windows 1
 	#define OS_Clear "cls"
 #endif
-/* End ... */
+/* End ...................................................... */
 
 #include <stdio.h>
 #include <time.h>
@@ -32,7 +31,7 @@ typedef struct listaSimple
 {
 	NLS *INICIO;
 	NLS *FIN;
-	int tam;
+	int tam;// tamaño de la lista
 }LTASIM;
 
 typedef struct AgendaMedica
@@ -73,9 +72,9 @@ AGM *obtener_agenda(LTAGM *, int);
 int verificar_turno(int, int, char[]);
 
 /*  variables globales y constantes */
-const char *SALIR = "1";	// Variable de control
+const char *SALIR = "1";	// Variable de control de ejecucion
 LTAGM *listaAgendas;		// Lista general de agendas.
-const char s[2]="-";		// delimitador de las fechas
+const char s[2]="-";		// delimitador de las fechas.
 
 /* Main del programa - Funcion principal */
 int main()
@@ -87,8 +86,7 @@ int main()
 	int num_agenda = 0, code_medico = 0;
 	char *fecha_consulta = (char *)malloc(10*sizeof(char));
 
-
-	/* Inserciones de prueba */
+	/* Inserciones de prueba 
 	struct AgendaMedica *Agenda1 = crearNuevaAgenda("08-01-2016", "18-01-2016", "Anatomia");
 	if (Agenda1!=NULL) insertarAgenda(listaAgendas, Agenda1);
 	
@@ -118,12 +116,14 @@ int main()
                 		puts("Ingrese el codigo del medico: ");
                 		scanf("%d", &code_medico);
                 		puts("Ingrese la fecha --> (dd-mm-yyyy): ");
-                		scanf("%s", &fecha_consulta);
+                		scanf("%s", fecha_consulta);
                 		vt = verificar_turno(num_agenda, code_medico, fecha_consulta);
                 		if(vt == 0) 
-                			puts("Turno Disponible...  :)");
+                			puts("INFO: Turno Disponible...  :)");
                 		else
-                			puts("Turno NO Disponible... :(");
+                			if(vt == -1)
+                				puts("INFO: Turno NO Disponible... :(");
+                		fflush(stdin);
                 		getchar();
                 		break;
                 default: break;
@@ -201,6 +201,7 @@ NLS *crearNodoLTASIM(int cod, char fecha_at[], int t_disp, int t_ocup)
 
 	struct tm strFecha;
     time_t fecha;
+    time(&fecha);		//time obtiene el tiempo del sistema y se lo pasa a la direccion de fecha
     setFecha(&strFecha, &fecha, fecha_at);
     strcpy(nodo->str_fecha, fecha_at);
 
@@ -214,7 +215,7 @@ NLS *crearNodoLTASIM(int cod, char fecha_at[], int t_disp, int t_ocup)
 
 void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[])
 {
-	char *str = (char *)malloc(10*sizeof(char));
+	char *str = (char *)malloc(20*sizeof(char));
 	strcpy(str,fecha);
 
 	tlocal = localtime(tiempo);
@@ -223,7 +224,7 @@ void setFecha(struct tm *tlocal, time_t *tiempo, char fecha[])
 	int numbday = atoi(strtok(str, s));
 	int numbmonth = atoi(strtok(NULL, s))-1;
 	int numbyear = atoi(strtok(NULL, s));
-	
+
 	if(numbyear <= 1900)
 	{
 		printf("INFO: La fecha no debe ser menor que: 01-01-1900.\n");
@@ -300,6 +301,8 @@ void insertarNodo(LTASIM *listaSim, NLS *Nod)
 /* inserta un elemento Agenda en una lista de Agendas */
 void eliminarAgenda(LTAGM *listaAg)
 {
+	//if(isEmpty(listaAgendas)==0){ puts("INFO: No se puede eliminar ya la Lista esta vacia."); return;}
+
 	printf("Ingrese el numero de la agenda que se va a eliminar: ");
 	char *inp = (char *)malloc(100*sizeof(char));
 	scanf("%s", inp);
@@ -312,6 +315,7 @@ void eliminarAgenda(LTAGM *listaAg)
 	{
 		/*  Bloque para el caso que se quiera eliminar el primer elemento */
 		if (n==1){
+			fflush(stdin);
 			agAux = listaAg->INICIO;
 			if(listaAg->tam==1){
 				listaAg->INICIO = NULL;
@@ -348,6 +352,7 @@ void eliminarAgenda(LTAGM *listaAg)
 		printf("ERROR: No se puede eliminar el elemento %d de la lista.\n", n);
 	}
 	puts("Presione cualquier tecla para continuar...");
+	fflush(stdin);
 	getchar();
 }
 
@@ -372,10 +377,6 @@ void mostrar_listaAgendas(LTAGM *listaAg)
 	AGM *auxiliar = malloc(sizeof(AGM)); /* lo usamos para recorrer la lista */
 	int i = 0;
 	int cont = 1;
-
-	//char * fechaI = (char *)malloc(10*sizeof(char));
-	//char * fechaF= (char *)malloc(10*sizeof(char));
-
 	auxiliar = listaAg->INICIO;
 	printf("\nMostrando la lista completa:\n\n");
 	while (auxiliar!=NULL) 
@@ -392,6 +393,7 @@ void mostrar_listaAgendas(LTAGM *listaAg)
 	if (i==0) printf( "\nINFO: La lista esta vacia!!\n" );
 	free(auxiliar);
 	puts("Presione cualquier tecla para continuar...");
+	fflush(stdin);
 	getchar();
 }
 
@@ -422,11 +424,14 @@ void anadir_elementoAg()
 		puts("ERROR: Formato de fechas incorrecto!");
 		getchar();
 	}
+	fflush(stdin);
 	getchar();
 }
 
 void ingresar_elementoLS()
 {
+	//if(isEmpty(listaAgendas)==0){ puts("INFO: Es imposible ingresar elementos si no existen agendas creadas."); return;}
+
 	AGM * agenda_actual = (AGM *)malloc(sizeof(AGM));
 	NLS *nuevo = (NLS *)malloc(sizeof(NLS));
 	int numLista, cod_med, turnos_libres, turnos_ocupados;
@@ -436,7 +441,7 @@ void ingresar_elementoLS()
 	scanf("%d", &numLista);
 	printf("Ingrese el codigo del medico:	"); fflush(stdin);
 	scanf("%d", &cod_med);
-	printf("Ingrese la fecha de atencion -->(dd-mm-yyyy): "); fflush(stdin);
+	printf("Ingrese la fecha de atencion--> (dd-mm-yyyy): "); fflush(stdin);
 	scanf("%s", fecha_atencion);
 	printf("Ingrese la cantidad de turnos libres: "); fflush(stdin);
 	scanf("%d", &turnos_libres);
@@ -454,28 +459,33 @@ void ingresar_elementoLS()
 	}else{
 		puts("ERROR: Formato de fechas incorrecto!");
 	}
+	fflush(stdin);
 	getchar();
 }
 
 int verificar_turno(int num_agenda, int cod_medico, char fecha_atencion[])
 {
+	//if(isEmpty(listaAgendas)==0){ puts("INFO: No se puede verificar el turno ya la Lista de agendas esta vacia."); return 1;}
+
 	AGM * agenda_actual = (AGM *)malloc(sizeof(AGM));
 	agenda_actual = obtener_agenda(NULL, num_agenda);
 
-	NLS * auxiliar;
-
-	auxiliar = agenda_actual->lista_simple->INICIO;
-	while (auxiliar!=NULL) 
-	{
-		if(auxiliar->codigo_medico == cod_medico) {
-			puts("Encontre al medico!");
-			if((*(auxiliar->str_fecha) = *fecha_atencion) && (auxiliar->turnos_libres>0))
-				return 0;
+	if(agenda_actual!=NULL){
+		NLS * auxiliar;
+		auxiliar = agenda_actual->lista_simple->INICIO;
+		while (auxiliar!=NULL) 
+		{
+			if(auxiliar->codigo_medico == cod_medico) {
+				if((*(auxiliar->str_fecha) = *fecha_atencion) && (auxiliar->turnos_libres>0))
+					return 0; // 0 = Encontrado!
+			}
+			auxiliar = auxiliar->siguiente;
 		}
-		auxiliar = auxiliar->siguiente;
+	}else{
+		puts("ERROR: No se encontro la agenda seleccionada!");
+		return 1;// 1 = return ERROR
 	}
-
-	return -1;
+	return -1; // -1 = No encontrado
 }
 
 AGM *obtener_agenda(LTAGM *lA, int numLista)
@@ -498,28 +508,3 @@ AGM *obtener_agenda(LTAGM *lA, int numLista)
 	return NULL;
 
 }
-
-
-/*
-	insertarNodo(LTASIM *listaSim, NLS *Nod)
-
-
-	time_t tiempo = time(0);
-	struct tm *tlocal = localtime(&tiempo);
-	char output[128];
-	strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
-	printf("%s\n",output);
-
-	Anatomía
-	Patológica	 	
- 	Anestesiología y Reanimación
- 	Cirugía General
- 	Cirugía Cardiovascular
- 	Cirugía Pediátrica	 	 
- 	Cirugía Digestiva
- 	Dermatología	 	 
- 	Cirugía de Tórax
-
- 	 pKeyboard = malloc(sizeof(struct MyStruct));
- 	 
-*/
