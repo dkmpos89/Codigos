@@ -71,6 +71,8 @@ void ingresar_elementoLS();
 AGM *obtener_agenda(LTAGM *, int);
 int verificar_turno(int, int, char[]);
 void mostrar_listaSimple(int);
+void eliminar_elementoLSimple(int, int);
+
 
 
 /*  variables globales y constantes */
@@ -137,8 +139,16 @@ int main()
 
                 case '7':
                 		puts("Ingrese el ID de la Agenda: ");
-                		scanf("%d", &sub_lista); 
-                		mostrar_listaSimple(sub_lista);
+                		scanf("%d", &num_agenda); 
+                		mostrar_listaSimple(num_agenda);
+                		break;
+
+                case '8':
+                		puts("Ingrese el ID de la Agenda: ");
+                		scanf("%d", &num_agenda);
+                		puts("Ingrese el codigo del medico: ");
+                		scanf("%d", &code_medico);
+                		eliminar_elementoLSimple(num_agenda, code_medico);
                 		break;
 
                 default:
@@ -159,13 +169,14 @@ void mostrarOpciones()
 	puts("       M E N U    D E    O P C I O N E S       ");
 	puts("  ===========================================  ");
 	puts("  ===========================================  ");
-	puts("1.- Salir\n");
-	puts("2.- Ingresar nueva agenda Medica\n");
-	puts("3.- Borrar Agenda Medica\n");
-	puts("4.- Mostrar lista de Agendas\n");
-	puts("5.- Ingresar elemento a lista_simple\n");
-	puts("6.- Consultar disponibilidad de turno\n");
-	puts("7.- Mostrar elementos de lista_simple\n\n");
+	puts("1.- Salir");
+	puts("2.- Ingresar nueva agenda Medica");
+	puts("3.- Borrar Agenda Medica");
+	puts("4.- Mostrar lista de Agendas");
+	puts("5.- Ingresar elemento a lista_simple");
+	puts("6.- Consultar disponibilidad de turno");
+	puts("7.- Mostrar elementos de lista_simple");
+	puts("8.- Eliminar elementos de la lista_simple\n");
 	puts("Ingrese una opcion: ");
 }
 
@@ -538,15 +549,53 @@ void mostrar_listaSimple(int num_agenda)
 		lista_actual = (LTASIM *)malloc(sizeof(LTASIM));
 		lista_actual = agenda_actual->lista_simple;
 
-		printf("ID: %d  -  Especialidad: %s\n", num_agenda, agenda_actual->especialidad);
 		if(lista_actual->tam > 0){
+			printf("\nID: %d  -  Especialidad: %s\n", num_agenda, agenda_actual->especialidad);
 			auxiliar = agenda_actual->lista_simple->INICIO;
 			while (auxiliar!=NULL) 
 			{
 				printf("Codigo del medico:  %d\n", auxiliar->codigo_medico);
 				printf("Fecha de atencion: %s\n", auxiliar->str_fecha);
 				printf("Cantidad de turnos libres: %d\n", auxiliar->turnos_libres);
-				printf("Cantidad de turnos ocupados: %d\n", auxiliar->turnos_ocupados);
+				printf("Cantidad de turnos ocupados: %d\n\n", auxiliar->turnos_ocupados);
+				auxiliar = auxiliar->siguiente;
+			}
+		}else{
+			printf("INFO: La agenda %d aun no contiene elementos.\n", num_agenda);
+		}
+	}
+	puts("Presione cualquier tecla para continuar...");
+	fflush(stdin);
+    getchar();
+}
+
+void eliminar_elementoLSimple(int num_agenda, int cod_medico)
+{
+	AGM * agenda_actual;
+	NLS * respaldo;
+	NLS * auxiliar;
+	LTASIM *lista_actual;
+
+	if(isEmpty(listaAgendas)==0){ 
+		puts("INFO: No se pueden eliminar los sub-elementos ---> Lista de agendas vacia.");
+	}else{
+		agenda_actual = (AGM *)malloc(sizeof(AGM));
+		agenda_actual = obtener_agenda(NULL, num_agenda);
+		lista_actual = (LTASIM *)malloc(sizeof(LTASIM));
+		lista_actual = agenda_actual->lista_simple;
+
+		if(lista_actual->tam > 0){
+			auxiliar = lista_actual->INICIO;
+			while (auxiliar!=NULL) 
+			{
+				if(auxiliar->codigo_medico == cod_medico){
+					respaldo->siguiente = auxiliar->siguiente;
+					lista_actual->tam -= 1;
+					free(auxiliar);
+					printf("INFO: El medico: %d ha sido borrado de la lista num: %d - Especialidad '%s'\n", cod_medico, num_agenda, agenda_actual->especialidad);
+					break;
+				}
+				respaldo = auxiliar;
 				auxiliar = auxiliar->siguiente;
 			}
 		}else{
