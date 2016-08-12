@@ -98,7 +98,8 @@ int main()
 
      do {
          mostrarOpciones();
-         opcion = getch();
+         opcion = getchar();
+         fflush(stdin);
              switch ( opcion ) {
                 case '1': printf("BYE!"); 
                 		exit( 1 );
@@ -123,7 +124,7 @@ int main()
                 			puts("Turno Disponible...  :)");
                 		else
                 			puts("Turno NO Disponible... :(");
-                		getch();
+                		getchar();
                 		break;
                 default: break;
              }
@@ -183,7 +184,7 @@ struct AgendaMedica *crearNuevaAgenda(char fI[], char fF[], char espec[])
 	double rango = difftime(fechaF, fechaI);
 	if(rango<=0) {
 		printf("ERROR: Rango de fechas no valido: %f dias.\n", rango/(24*3600));  // la variable rango esta en segundos por eso se divide para convertirla en dias. 
-		getch();
+		getchar();
 		free(pAG);
 		return NULL;
 	}
@@ -318,14 +319,14 @@ void eliminarAgenda(LTAGM *listaAg)
 				free(agAux);
 				puts("SUCCESS: Registro Eliminado!\n" );
 				puts("Presione cualquier tecla para continuar...");
-				getch();
+				getchar();
 				return;
 			}else{
 				listaAg->INICIO = listaAg->INICIO->siguiente;
 				free(agAux);
 				puts("SUCCESS: Registro Eliminado!\n" );
 				puts("Presione cualquier tecla para continuar...");
-				getch();
+				getchar();
 				return;
 			}
 		}
@@ -347,7 +348,7 @@ void eliminarAgenda(LTAGM *listaAg)
 		printf("ERROR: No se puede eliminar el elemento %d de la lista.\n", n);
 	}
 	puts("Presione cualquier tecla para continuar...");
-	getch();
+	getchar();
 }
 
 /* Verifica si la lista esta vacia */
@@ -391,20 +392,19 @@ void mostrar_listaAgendas(LTAGM *listaAg)
 	if (i==0) printf( "\nINFO: La lista esta vacia!!\n" );
 	free(auxiliar);
 	puts("Presione cualquier tecla para continuar...");
-	getch();
+	getchar();
 }
 
 void anadir_elementoAg()
 {
 	AGM *nuevo;
 	char f1[20], f2[20], esp[20];
-
 	printf("\nNueva agenda Medica:\n");
-	printf("Especialidad:	"); fflush(stdout);
+	printf("Especialidad:	"); fflush(stdin);
 	gets(esp);
-	printf("Fecha de Inicio-->	(dd-mm-yyyy) : "); fflush(stdout);
+	printf("Fecha de Inicio-->	(dd-mm-yyyy) : "); fflush(stdin);
 	gets(f1);
-	printf("Fecha de Termino->	(dd-mm-yyyy) : "); fflush(stdout);
+	printf("Fecha de Termino->	(dd-mm-yyyy) : "); fflush(stdin);
 	gets(f2);
 
 	if (strlen(f1)==10 && strlen(f2)==10)
@@ -413,9 +413,9 @@ void anadir_elementoAg()
 		insertarAgenda(listaAgendas, nuevo);
 	}else{
 		puts("ERROR: Formato de fechas incorrecto!");
-		getch();
+		getchar();
 	}
-	getch();
+	getchar();
 }
 
 void ingresar_elementoLS()
@@ -427,13 +427,13 @@ void ingresar_elementoLS()
 
 	printf("\nIngrese numero de la Lista en la que se va a insertar: ");
 	scanf("%d", &numLista);
-	printf("Ingrese el codigo del medico:	"); fflush(stdout);
+	printf("Ingrese el codigo del medico:	"); fflush(stdin);
 	scanf("%d", &cod_med);
-	printf("Ingrese la fecha de atencion -->(dd-mm-yyyy): "); fflush(stdout);
+	printf("Ingrese la fecha de atencion -->(dd-mm-yyyy): "); fflush(stdin);
 	scanf("%s", &fecha_atencion);
-	printf("Ingrese la cantidad de turnos libres: "); fflush(stdout);
+	printf("Ingrese la cantidad de turnos libres: "); fflush(stdin);
 	scanf("%d", &turnos_libres);
-	printf("Ingrese la cantidad de turnos ocupados: "); fflush(stdout);
+	printf("Ingrese la cantidad de turnos ocupados: "); fflush(stdin);
 	scanf("%d", &turnos_ocupados);
 
 	if (strlen(fecha_atencion)==10)
@@ -447,7 +447,7 @@ void ingresar_elementoLS()
 	}else{
 		puts("ERROR: Formato de fechas incorrecto!");
 	}
-	getch();
+	getchar();
 }
 
 int verificar_turno(int num_agenda, int cod_medico, char fecha_atencion[])
