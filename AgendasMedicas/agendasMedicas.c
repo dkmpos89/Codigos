@@ -70,6 +70,8 @@ void anadir_elementoAg();
 void ingresar_elementoLS();
 AGM *obtener_agenda(LTAGM *, int);
 int verificar_turno(int, int, char[]);
+void mostrar_listaSimple(int);
+
 
 /*  variables globales y constantes */
 const char *SALIR = "1";	// Variable de control de ejecucion
@@ -83,10 +85,10 @@ int main()
 	listaAgendas = crearLista();
 	char opcion;
 	int vt = -1; // variable para verificar_turnos:  0 | -1
-	int num_agenda = 0, code_medico = 0;
+	int num_agenda = 0, code_medico = 0, sub_lista = 0;
 	char *fecha_consulta = (char *)malloc(10*sizeof(char));
 
-	/* Inserciones de prueba 
+	/* Inserciones de prueba */
 	struct AgendaMedica *Agenda1 = crearNuevaAgenda("08-01-2016", "18-01-2016", "Anatomia");
 	if (Agenda1!=NULL) insertarAgenda(listaAgendas, Agenda1);
 	
@@ -111,22 +113,36 @@ int main()
                 case '5': ingresar_elementoLS();
                 		break;
                 case '6': 
-                		puts("Ingrese el ID de la agenda: ");
-                		scanf("%d", &num_agenda);
-                		puts("Ingrese el codigo del medico: ");
-                		scanf("%d", &code_medico);
-                		puts("Ingrese la fecha --> (dd-mm-yyyy): ");
-                		scanf("%s", fecha_consulta);
-                		vt = verificar_turno(num_agenda, code_medico, fecha_consulta);
+                		if(isEmpty(listaAgendas)==0){ 
+                			puts("INFO: No se puede verificar el turno ya que la Lista de agendas esta vacia."); 
+                			vt = 1;
+                		}else{
+                			puts("Ingrese el ID de la agenda: ");
+                			scanf("%d", &num_agenda);
+	                		puts("Ingrese el codigo del medico: ");
+	                		scanf("%d", &code_medico);
+	                		puts("Ingrese la fecha --> (dd-mm-yyyy): ");
+	                		scanf("%s", fecha_consulta);
+	                		vt = verificar_turno(num_agenda, code_medico, fecha_consulta);
+                		}
                 		if(vt == 0) 
                 			puts("INFO: Turno Disponible...  :)");
                 		else
                 			if(vt == -1)
                 				puts("INFO: Turno NO Disponible... :(");
+
                 		fflush(stdin);
                 		getchar();
                 		break;
-                default: break;
+
+                case '7':
+                		puts("Ingrese el ID de la Agenda: ");
+                		scanf("%d", &sub_lista); 
+                		mostrar_listaSimple(sub_lista);
+                		break;
+
+                default:
+                		break;
              }
      } while (opcion != *SALIR);
 
@@ -148,7 +164,8 @@ void mostrarOpciones()
 	puts("3.- Borrar Agenda Medica\n");
 	puts("4.- Mostrar lista de Agendas\n");
 	puts("5.- Ingresar elemento a lista_simple\n");
-	puts("6.- Consultar disponibilidad de turno\n\n");
+	puts("6.- Consultar disponibilidad de turno\n");
+	puts("7.- Mostrar elementos de lista_simple\n\n");
 	puts("Ingrese una opcion: ");
 }
 
@@ -301,7 +318,7 @@ void insertarNodo(LTASIM *listaSim, NLS *Nod)
 /* inserta un elemento Agenda en una lista de Agendas */
 void eliminarAgenda(LTAGM *listaAg)
 {
-	//if(isEmpty(listaAgendas)==0){ puts("INFO: No se puede eliminar ya la Lista esta vacia."); return;}
+	if(isEmpty(listaAgendas)==0){ puts("INFO: No se puede usar la funcion eliminar en una lista vacia."); getchar(); return;}
 
 	printf("Ingrese el numero de la agenda que se va a eliminar: ");
 	char *inp = (char *)malloc(100*sizeof(char));
@@ -430,7 +447,7 @@ void anadir_elementoAg()
 
 void ingresar_elementoLS()
 {
-	//if(isEmpty(listaAgendas)==0){ puts("INFO: Es imposible ingresar elementos si no existen agendas creadas."); return;}
+	if(isEmpty(listaAgendas)==0){ puts("INFO: Imposible ingresar sub-elementos si no existen agendas creadas."); getchar(); return;}
 
 	AGM * agenda_actual = (AGM *)malloc(sizeof(AGM));
 	NLS *nuevo = (NLS *)malloc(sizeof(NLS));
@@ -465,8 +482,6 @@ void ingresar_elementoLS()
 
 int verificar_turno(int num_agenda, int cod_medico, char fecha_atencion[])
 {
-	//if(isEmpty(listaAgendas)==0){ puts("INFO: No se puede verificar el turno ya la Lista de agendas esta vacia."); return 1;}
-
 	AGM * agenda_actual = (AGM *)malloc(sizeof(AGM));
 	agenda_actual = obtener_agenda(NULL, num_agenda);
 
@@ -507,4 +522,38 @@ AGM *obtener_agenda(LTAGM *lA, int numLista)
 
 	return NULL;
 
+}
+
+void mostrar_listaSimple(int num_agenda)
+{
+	AGM * agenda_actual;
+	NLS * auxiliar;
+	LTASIM *lista_actual;
+
+	if(isEmpty(listaAgendas)==0){ 
+		puts("INFO: No se pueden mostrar los sub-elementos ---> Lista de agendas vacia.");
+	}else{
+		agenda_actual = (AGM *)malloc(sizeof(AGM));
+		agenda_actual = obtener_agenda(NULL, num_agenda);
+		lista_actual = (LTASIM *)malloc(sizeof(LTASIM));
+		lista_actual = agenda_actual->lista_simple;
+
+		printf("ID: %d  -  Especialidad: %s\n", num_agenda, agenda_actual->especialidad);
+		if(lista_actual->tam > 0){
+			auxiliar = agenda_actual->lista_simple->INICIO;
+			while (auxiliar!=NULL) 
+			{
+				printf("Codigo del medico:  %d\n", auxiliar->codigo_medico);
+				printf("Fecha de atencion: %s\n", auxiliar->str_fecha);
+				printf("Cantidad de turnos libres: %d\n", auxiliar->turnos_libres);
+				printf("Cantidad de turnos ocupados: %d\n", auxiliar->turnos_ocupados);
+				auxiliar = auxiliar->siguiente;
+			}
+		}else{
+			printf("INFO: La agenda %d aun no contiene elementos.\n", num_agenda);
+		}
+	}
+	puts("Presione cualquier tecla para continuar...");
+	fflush(stdin);
+    getchar();
 }
