@@ -56,8 +56,8 @@ void calcularEstadisticas(int n);
 
 /*  variables globales y constantes */
 const int SALIR = 1;	// Variable de control de ejecucion
-s_cola *colaAtendidos,*colaAbandonos; 
-const int tiempo_servicios[]  = {180, 240, 480, 300, 120};
+s_cola *colaAtendidos,*colaAbandonos; // colas globales que se usan para guardar clientes atendidos y no atendidos.
+const int tiempo_servicios[]  = {180, 240, 480, 300, 120}; //vector de tiempos de los servicios se usa en la funcion simulacion()
 
 
 
@@ -207,8 +207,8 @@ void Simulacion(s_cola *filabanco)
     colaAbandonos = crearCola();
 
     while(isEmpty(filabanco)){
-        demora += tiempo_servicios[filabanco->FRENTE->tipo_servicio];
-        printf("demora acumulada: %f\n", demora);
+    	//printf("tipo servicio: %d - demora: %d\n", filabanco->FRENTE->tipo_servicio, tiempo_servicios[filabanco->FRENTE->tipo_servicio -1]);
+        demora += tiempo_servicios[filabanco->FRENTE->tipo_servicio - 1];
         max = filabanco->FRENTE->tiempoMax;
         s_cl *cl = desencolar(filabanco);
         cl->tiempoEspera = demora;
