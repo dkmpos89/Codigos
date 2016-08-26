@@ -38,25 +38,7 @@ typedef struct cola_Banco
 	int tam;// tamaño de la lista
 }s_cola;
 
-/*
-typedef struct AgendaMedica
-{
-   time_t fechaInicio;
-   char *str_fecha_I;
-   time_t fechaFin;
-   char *str_fecha_F;
-   char *especialidad;
-   LTASIM  *lista_simple;
-   struct AgendaMedica *siguiente;
-}AGM;
 
-typedef struct ListadoAgendasMedicas
-{
-	AGM *INICIO;
-	AGM *FIN;
-	int tam;// tamaño de la lista
-}LTAGM;
-*/
 
 /* Declaracion de funciones */
 void mostrarOpciones();
@@ -83,7 +65,7 @@ const int tiempo_servicios[]  = {180, 240, 480, 300, 120};
 int main()
 {	
 	/* Inicializacion */
-	srand (time(NULL));
+	srand (time());
 	int n=0, cont=0;
 	s_cola *filaBanco;
 
@@ -92,11 +74,9 @@ int main()
         scanf("%d", &n);
      	filaBanco = crearCola();
 		filaBanco = ingresarClientes(n);
-		desencolar(filaBanco);
-		desencolar(filaBanco);
-		desencolar(filaBanco);
-		printf("cola con %d elementos.\n", filaBanco->tam );
-		//printf("Tiempo random: %d\n", tiempo_servicios[rand()%5+1] );
+		Simulacion(filaBanco);
+		printf("Cola de atendidos: %d clientes\n", colaAtendidos->tam );
+		printf("Cola de abandonos: %d clientes\n", colaAbandonos->tam );
 		//printf("Numero random: %d\n", rand()%9+1 );
 		//system("pause");
          cont++;
@@ -169,6 +149,13 @@ s_cl *desencolar(s_cola *filabanco)
 	if (isEmpty(filabanco) > 0 && filabanco->FINAL!=NULL && filabanco->FRENTE!=NULL)
 	{
 		Aux = filabanco->FINAL;
+		if(filabanco->FRENTE == filabanco->FINAL){
+			filabanco->FRENTE = NULL;
+			filabanco->FINAL = NULL;
+			filabanco->tam -= 1;
+			return Aux;
+		}
+
 		do{
 			if(Aux->siguiente == filabanco->FRENTE){
 				filabanco->FRENTE = Aux;
@@ -178,8 +165,9 @@ s_cl *desencolar(s_cola *filabanco)
 				Aux = Aux->siguiente;
 			}
 		}while( Aux != filabanco->FRENTE );
+
 	}else
-		puts("\nERROR: fila de banco vacia.");
+		puts("\nERROR: No se puede desencolar ya que la fila de banco esta vacia.");
 
 	return Aux->siguiente;
 }
@@ -196,7 +184,6 @@ int isEmpty(s_cola *filabanco)
 			cont++;
 		}
 	}
-	printf("contador: %d\n", cont);
 	return cont;
 }
 
@@ -211,4 +198,24 @@ s_cola *ingresarClientes(int n)
 	}
 
 	return colabanco;
+}
+
+void Simulacion(s_cola *filabanco)
+{
+    double demora = 0, max=0;
+    colaAtendidos = crearCola();
+    colaAbandonos = crearCola();
+
+    while(isEmpty(filabanco)){
+        demora += tiempo_servicios[filabanco->FRENTE->tipo_servicio];
+        printf("demora acumulada: %f\n", demora);
+        max = filabanco->FRENTE->tiempoMax;
+        s_cl *cl = desencolar(filabanco);
+        cl->tiempoEspera = demora;
+        if(demora <= max){
+            encolar(colaAtendidos,cl); 
+        }else{
+            encolar(colaAbandonos,cl);
+        }
+    }
 }
